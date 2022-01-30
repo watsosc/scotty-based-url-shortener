@@ -8,6 +8,7 @@ import Data.IORef (modifyIORef, newIORef, readIORef)
 import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Text (Text)
+import qualified Data.Text.Lazy as LT
 import Text.Blaze.Html.Renderer.Text (renderHtml)
 import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as A
@@ -39,3 +40,9 @@ shortener = do
           \(i, urls) ->
             (i + 1, M.insert i url urls)
       redirect "/"
+    get "/:short" $ do
+      shortenedUrl <- param "short"
+      (_, urls) <- liftIO $ readIORef urlsR
+      case M.lookup shortenedUrl urls of
+        Nothing -> redirect "/"
+        Just url -> redirect (LT.fromStrict url)
